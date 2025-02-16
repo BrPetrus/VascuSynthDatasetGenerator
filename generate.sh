@@ -8,6 +8,8 @@ set -e
 VASCUSYNTH_BIN="/home/xpetrus/DP/VascuSynth/build/VascuSynth"
 OUTPUT_DIR="./output/"
 
+echo "Using ${VASCUSYNTH_BIN}"
+
 for noiseFileRaw in noiseFiles/*; do
     (
         noiseFile=$(basename ${noiseFileRaw})
@@ -19,11 +21,15 @@ for noiseFileRaw in noiseFiles/*; do
             break
         fi
 
+        echo "Running command ${VASCUSYNTH_BIN} paramFiles.txt imageNames.txt 0.04 ${noiseFile}"
+
         # Copy relevant files
-        cp p{1..5}.txt paramFiles.txt imageNames.txt testOx.txt testS.txt "${OUT}" &&
-        
+        cp p{1..5}.txt paramFiles.txt imageNames.txt testOx.txt testS.txt "./${noiseFiles}/${noiseFileRaw}" "${OUT}" &&
         cd "$OUT" &&
-        ${VASCUSYNTH_BIN} paramFiles.txt imageNames.txt 0.04 &&
+        ${VASCUSYNTH_BIN} paramFiles.txt imageNames.txt 0.04 "${noiseFile}" || {
+            echo "Error occurred while running VascuSynth with ${noiseFileRaw}: $?"
+            exit 1
+        } &&
         cd ../..
     ) &
 done
